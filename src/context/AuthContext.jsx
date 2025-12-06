@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('/.netlify/functions/auth', {
+      const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', email, password }),
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, fullName, company) => {
     try {
-      const response = await fetch('/.netlify/functions/auth', {
+      const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'register', email, password, fullName, company }),
