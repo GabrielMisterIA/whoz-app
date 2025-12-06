@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Guide de Déploiement Whoz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .method-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .method-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .method-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .method-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .method-title {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .method-badge {
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-left: auto;
+            font-weight: 600;
+        }
+        
+        .command-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .command-box code {
+            display: block;
+            white-space: pre;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: background 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .important {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Whoz Deployment</h1>
+        <p class="subtitle">Déploie ton application en 3 clics sur Netlify</p>
+        
+        <!-- Méthode 1 : Script automatique -->
+        <div class="method-card">
+            <div class="method-header">
+                <div class="method-number">1</div>
+                <div class="method-title">Script Automatique</div>
+                <span class="method-badge">⚡ RECOMMANDÉ</span>
+            </div>
+            
+            <p style="margin-bottom: 20px; color: #666;">
+                La méthode la plus simple ! Un seul script qui fait tout pour toi.
+            </p>
+            
+            <div class="step">
+                <span class="step-number">Étape 1:</span> Ouvre ton terminal dans le dossier whoz-app
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Étape 2:</span> Installe les dépendances
+                <div class="command-box">
+                    <code>npm install</code>
+                    <button class="copy-btn" onclick="copyToClipboard('npm install')">Copier</button>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Étape 3:</span> Lance le script de déploiement
+                <div class="command-box">
+                    <code id="deploy-cmd">./deploy.sh</code>
+                    <button class="copy-btn" onclick="copyToClipboard('./deploy.sh')">Copier</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Sur Windows PowerShell : <code>.\deploy.ps1</code>
+                </p>
+            </div>
+            
+            <div class="success">
+                <strong>✅ C'est tout !</strong> Le script s'occupe de tout : connexion, création du site, build et déploiement.
+            </div>
+        </div>
+        
+        <!-- Méthode 2 : Drag & Drop -->
+        <div class="method-card">
+            <div class="method-header">
+                <div class="method-number">2</div>
+                <div class="method-title">Drag & Drop</div>
+                <span class="method-badge" style="background: #3b82f6;">🖱️ SANS CODE</span>
+            </div>
+            
+            <p style="margin-bottom: 20px; color: #666;">
+                Sans ligne de commande, juste avec ta souris !
+            </p>
+            
+            <div class="step">
+                <span class="step-number">Étape 1:</span> Build l'application
+                <div class="command-box">
+                    <code>npm install
+npm run build</code>
+                    <button class="copy-btn" onclick="copyToClipboard('npm install\nnpm run build')">Copier</button>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Étape 2:</span> Va sur <a href="https://app.netlify.com" target="_blank" style="color: #667eea;">app.netlify.com</a>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Étape 3:</span> Clique sur "Add new site" → "Deploy manually"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Étape 4:</span> Glisse-dépose le dossier <strong>dist</strong>
+            </div>
+            
+            <div class="success">
+                <strong>🎉 En ligne !</strong> Ton site est maintenant accessible publiquement.
+            </div>
+        </div>
+        
+        <!-- Méthode 3 : Commandes manuelles -->
+        <div class="method-card">
+            <div class="method-header">
+                <div class="method-number">3</div>
+                <div class="method-title">Commandes Manuelles</div>
+                <span class="method-badge" style="background: #6366f1;">🎮 CONTRÔLE TOTAL</span>
+            </div>
+            
+            <p style="margin-bottom: 20px; color: #666;">
+                Pour ceux qui aiment contrôler chaque étape.
+            </p>
+            
+            <div class="command-box">
+                <code>cd whoz-app
+npm install
+npx netlify login
+npx netlify init
+npm run build
+npx netlify deploy --prod --dir=dist</code>
+                <button class="copy-btn" onclick="copyToClipboard('cd whoz-app\nnpm install\nnpx netlify login\nnpx netlify init\nnpm run build\nnpx netlify deploy --prod --dir=dist')">Copier</button>
+            </div>
+        </div>
+        
+        <!-- Infos importantes -->
+        <div class="method-card">
+            <h2 style="color: #333; margin-bottom: 20px;">📋 Infos Importantes</h2>
+            
+            <div class="important">
+                <strong>⚠️ Première fois sur Netlify ?</strong><br>
+                Crée un compte gratuit sur <a href="https://app.netlify.com/signup" target="_blank">netlify.com/signup</a><br>
+                Le plan gratuit inclut : 100 GB/mois, HTTPS automatique, domaine .netlify.app gratuit
+            </div>
+            
+            <div class="step">
+                <strong>🔧 Prérequis :</strong> Node.js 18 ou supérieur
+                <div class="command-box">
+                    <code>node --version</code>
+                    <button class="copy-btn" onclick="copyToClipboard('node --version')">Copier</button>
+                </div>
+            </div>
+            
+            <div class="step">
+                <strong>🧪 Tester en local d'abord :</strong>
+                <div class="command-box">
+                    <code>npm run dev</code>
+                    <button class="copy-btn" onclick="copyToClipboard('npm run dev')">Copier</button>
+                </div>
+                Puis ouvre <a href="http://localhost:5173" target="_blank">localhost:5173</a>
+            </div>
+        </div>
+        
+        <!-- Boutons d'action -->
+        <div class="button-group">
+            <a href="https://app.netlify.com" target="_blank" class="btn btn-primary">
+                Ouvrir Netlify Dashboard
+            </a>
+            <a href="https://docs.netlify.com" target="_blank" class="btn btn-secondary">
+                Documentation Netlify
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>Créé avec ❤️ - Application Whoz prête pour la production</p>
+            <p style="margin-top: 10px;">Besoin d'aide ? Consulte le fichier DEPLOY.md</p>
+        </div>
+    </div>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copié !';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
