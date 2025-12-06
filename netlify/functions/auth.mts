@@ -18,7 +18,7 @@ export default async (req, context) => {
 
     if (action === 'register') {
       // Check if user already exists
-      const existingUser = await store.get(`user:${email}`);
+      const existingUser = await store.get(`user:${email}`, { type: 'text' });
       
       if (existingUser) {
         return new Response(JSON.stringify({ message: 'Cet email est déjà utilisé' }), {
@@ -40,7 +40,7 @@ export default async (req, context) => {
         createdAt: new Date().toISOString(),
       };
 
-      // Store user
+      // Store user as JSON string
       await store.set(`user:${email}`, JSON.stringify(user));
 
       // Return user without password
@@ -56,8 +56,11 @@ export default async (req, context) => {
     }
 
     if (action === 'login') {
-      // Get user
-      const userData = await store.get(`user:${email}`);
+      // Get user with explicit text type
+      const userData = await store.get(`user:${email}`, { type: 'text' });
+      
+      console.log('Login attempt for:', email);
+      console.log('User data found:', userData ? 'Yes' : 'No');
       
       if (!userData) {
         return new Response(JSON.stringify({ message: 'Email ou mot de passe incorrect' }), {
@@ -66,10 +69,25 @@ export default async (req, context) => {
         });
       }
 
-      const user = JSON.parse(userData);
+      // Parse user data
+      let user;
+      try {
+        user = JSON.parse(userData);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        return new Response(JSON.stringify({ message: 'Erreur de lecture des données utilisateur' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      console.log('User object parsed successfully');
+      console.log('Stored password hash exists:', !!user.password);
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
+      
+      console.log('Password validation result:', isValidPassword);
 
       if (!isValidPassword) {
         return new Response(JSON.stringify({ message: 'Email ou mot de passe incorrect' }), {
@@ -97,7 +115,11 @@ export default async (req, context) => {
 
   } catch (error) {
     console.error('Auth error:', error);
-    return new Response(JSON.stringify({ message: 'Erreur serveur' }), {
+    console.error('Error stack:', error.stack);
+    return new Response(JSON.stringify({ 
+      message: 'Erreur serveur',
+      error: error.message 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
