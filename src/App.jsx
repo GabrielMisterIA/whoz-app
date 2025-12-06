@@ -1,10 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Talents from './pages/Talents';
+import TalentDetail from './pages/TalentDetail';
 import Pipeline from './pages/Pipeline';
 
 const PrivateRoute = ({ children }) => {
@@ -38,50 +40,60 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/talents"
-            element={
-              <PrivateRoute>
-                <Talents />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pipeline"
-            element={
-              <PrivateRoute>
-                <Pipeline />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/talents"
+              element={
+                <PrivateRoute>
+                  <Talents />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/talents/:id"
+              element={
+                <PrivateRoute>
+                  <TalentDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pipeline"
+              element={
+                <PrivateRoute>
+                  <Pipeline />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }
