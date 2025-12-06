@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Talents from './pages/Talents';
+import Pipeline from './pages/Pipeline';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -59,6 +61,22 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/talents"
+            element={
+              <PrivateRoute>
+                <Talents />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pipeline"
+            element={
+              <PrivateRoute>
+                <Pipeline />
               </PrivateRoute>
             }
           />
