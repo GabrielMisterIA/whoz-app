@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
+import { useToast } from '../context/ToastContext';
 import { 
   Users, 
   Search, 
   Filter,
   Plus,
-  Upload,
   X,
-  FileText,
-  Mail,
-  Phone,
-  MapPin,
-  Briefcase
+  ChevronDown
 } from 'lucide-react';
 
 const SUPABASE_URL = 'https://zscvspazoifgliyqnfte.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY3ZzcGF6b2lmZ2xpeXFuZnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDA1NjksImV4cCI6MjA4MDYxNjU2OX0.n_-qHs1crRQ1tmdURypancvrGrOy3u2Uy-FXVBXa6v4';
 
 const Talents = () => {
+  const navigate = useNavigate();
+  const { success, error: showError } = useToast();
   const [talents, setTalents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [filters, setFilters] = useState({
+    type: '',
+    availability: '',
+    skills: ''
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -47,8 +54,9 @@ const Talents = () => {
       });
       const data = await response.json();
       setTalents(data || []);
-    } catch (error) {
-      console.error('Error fetching talents:', error);
+    } catch (err) {
+      console.error('Error fetching talents:', err);
+      showError('Erreur lors du chargement des talents');
     } finally {
       setLoading(false);
     }
@@ -59,7 +67,6 @@ const Talents = () => {
     setLoading(true);
 
     try {
-      // Convertir les compétences en array
       const skillsArray = formData.skills
         .split(',')
         .map(s => s.trim())
@@ -68,7 +75,7 @@ const Talents = () => {
       const talentData = {
         ...formData,
         skills: skillsArray,
-        profile_completion: 50, // Calcul simple pour le MVP
+        profile_completion: 50,
       };
 
       const response = await fetch(`${SUPABASE_URL}/rest/v1/talents`, {
@@ -83,6 +90,7 @@ const Talents = () => {
       });
 
       if (response.ok) {
+        success('Talent créé avec succès');
         await fetchTalents();
         setShowModal(false);
         setFormData({
@@ -97,26 +105,34 @@ const Talents = () => {
           availability: 'Disponible'
         });
       }
-    } catch (error) {
-      console.error('Error creating talent:', error);
+    } catch (err) {
+      console.error('Error creating talent:', err);
+      showError('Erreur lors de la création du talent');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredTalents = talents.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.email && t.email.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredTalents = talents.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.email && t.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesType = !filters.type || t.type === filters.type;
+    const matchesAvailability = !filters.availability || t.availability === filters.availability;
+    const matchesSkills = !filters.skills || (t.skills && t.skills.some(s => 
+      s.toLowerCase().includes(filters.skills.toLowerCase())
+    ));
+
+    return matchesSearch && matchesType && matchesAvailability && matchesSkills;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+    <Layout>
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Talents</h1>
-            <p className="text-gray-600 text-sm mt-1">{talents.length} talents enregistrés</p>
+            <p className="text-gray-600 text-sm mt-1">{filteredTalents.length} talent{filteredTalents.length > 1 ? 's' : ''} trouvé{filteredTalents.length > 1 ? 's' : ''}</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -133,17 +149,63 @@ const Talents = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Rechercher un talent..."
+              placeholder="Rechercher par nom ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button className="px-4 py-2 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-4 py-2 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50"
+          >
             <Filter size={20} />
             Filtres
+            <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </button>
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <select
+                value={filters.type}
+                onChange={(e) => setFilters({...filters, type: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="">Tous</option>
+                <option value="Interne">Interne</option>
+                <option value="Externe">Externe</option>
+                <option value="Alumni">Alumni</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Disponibilité</label>
+              <select
+                value={filters.availability}
+                onChange={(e) => setFilters({...filters, availability: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="">Tous</option>
+                <option value="Disponible">Disponible</option>
+                <option value="Occupé">Occupé</option>
+                <option value="Partiellement disponible">Partiellement disponible</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Compétence</label>
+              <input
+                type="text"
+                placeholder="Ex: React"
+                value={filters.skills}
+                onChange={(e) => setFilters({...filters, skills: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -164,18 +226,28 @@ const Talents = () => {
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                    Chargement...
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
                   </td>
                 </tr>
               ) : filteredTalents.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                    Aucun talent trouvé
+                    <div>
+                      <Users size={48} className="mx-auto text-gray-300 mb-4" />
+                      <p className="text-lg font-medium">Aucun talent trouvé</p>
+                      <p className="text-sm text-gray-400 mt-2">Commencez par créer votre premier talent</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 filteredTalents.map((talent) => (
-                  <tr key={talent.id} className="hover:bg-gray-50 cursor-pointer">
+                  <tr 
+                    key={talent.id} 
+                    onClick={() => navigate(`/talents/${talent.id}`)}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div>
                         <div className="font-medium text-gray-900">{talent.name}</div>
@@ -240,7 +312,7 @@ const Talents = () => {
         </div>
       </div>
 
-      {/* Modal Create Talent */}
+      {/* Modal Create Talent - (keeping the existing modal code) */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
