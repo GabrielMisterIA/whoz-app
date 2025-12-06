@@ -17,20 +17,27 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', email, password }),
-      });
+      // Get all users from localStorage
+      const usersData = localStorage.getItem('whoz_users');
+      const users = usersData ? JSON.parse(usersData) : {};
       
-      const data = await response.json();
+      // Find user
+      const user = users[email];
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Erreur de connexion');
+      if (!user) {
+        return { success: false, message: 'Email ou mot de passe incorrect' };
       }
       
-      setUser(data.user);
-      localStorage.setItem('whoz_user', JSON.stringify(data.user));
+      // Verify password (simple comparison since we're storing plain text for simplicity)
+      if (user.password !== password) {
+        return { success: false, message: 'Email ou mot de passe incorrect' };
+      }
+      
+      // Login successful
+      const { password: _, ...userWithoutPassword } = user;
+      setUser(userWithoutPassword);
+      localStorage.setItem('whoz_user', JSON.stringify(userWithoutPassword));
+      
       return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
@@ -39,20 +46,34 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, fullName, company) => {
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'register', email, password, fullName, company }),
-      });
+      // Get all users from localStorage
+      const usersData = localStorage.getItem('whoz_users');
+      const users = usersData ? JSON.parse(usersData) : {};
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Erreur d\'inscription');
+      // Check if user already exists
+      if (users[email]) {
+        return { success: false, message: 'Cet email est déjà utilisé' };
       }
       
-      setUser(data.user);
-      localStorage.setItem('whoz_user', JSON.stringify(data.user));
+      // Create new user
+      const newUser = {
+        id: Date.now().toString(),
+        email,
+        fullName,
+        company,
+        password, // Storing plain text for simplicity in this demo
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Save to users database
+      users[email] = newUser;
+      localStorage.setItem('whoz_users', JSON.stringify(users));
+      
+      // Login the user
+      const { password: _, ...userWithoutPassword } = newUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem('whoz_user', JSON.stringify(userWithoutPassword));
+      
       return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
