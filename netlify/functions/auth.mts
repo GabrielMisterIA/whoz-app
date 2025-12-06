@@ -1,57 +1,10 @@
 import bcrypt from 'bcryptjs';
 
-// IMPORTANT: Configurer GITHUB_TOKEN dans les variables d'environnement Netlify
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO = 'GabrielMisterIA/whoz-app';
-const FILE_PATH = 'data/users.json';
-
-async function getUsers() {
-  const url = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `token ${GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github.v3+json'
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch users');
-  }
-  
-  const data = await response.json();
-  const content = Buffer.from(data.content, 'base64').toString('utf-8');
-  return {
-    users: JSON.parse(content),
-    sha: data.sha
-  };
-}
-
-async function saveUsers(users, sha) {
-  const url = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
-  const content = Buffer.from(JSON.stringify(users, null, 2)).toString('base64');
-  
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: 'Update users database',
-      content: content,
-      sha: sha
-    })
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to save users');
-  }
-  
-  return await response.json();
-}
+const SUPABASE_URL = 'https://zscvspazoifgliyqnfte.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY3ZzcGF6b2lmZ2xpeXFuZnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDA1NjksImV4cCI6MjA4MDYxNjU2OX0.n_-qHs1crRQ1tmdURypancvrGrOy3u2Uy-FXVBXa6v4';
 
 export default async (req, context) => {
+  // Only allow POST requests
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ message: 'Method not allowed' }), {
       status: 405,
@@ -61,13 +14,22 @@ export default async (req, context) => {
 
   try {
     const { action, email, password, fullName, company } = await req.json();
-    const { users, sha } = await getUsers();
 
     if (action === 'register') {
-      // Check if user exists
-      const existingUser = users.users.find(u => u.email === email);
+      // Check if user already exists
+      const checkResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+          }
+        }
+      );
+
+      const existingUsers = await checkResponse.json();
       
-      if (existingUser) {
+      if (existingUsers && existingUsers.length > 0) {
         return new Response(JSON.stringify({ message: 'Cet email est déjà utilisé' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' }
@@ -77,28 +39,47 @@ export default async (req, context) => {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Create new user
-      const newUser = {
-        id: Date.now().toString(),
-        email,
-        fullName,
-        company,
-        password: hashedPassword,
-        createdAt: new Date().toISOString(),
-      };
+      // Create user in Supabase
+      const createResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/users`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            email,
+            password: hashedPassword,
+            full_name: fullName,
+            company
+          })
+        }
+      );
 
-      // Add user to array
-      users.users.push(newUser);
+      if (!createResponse.ok) {
+        const error = await createResponse.text();
+        console.error('Supabase error:', error);
+        return new Response(JSON.stringify({ message: 'Erreur lors de la création du compte' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
 
-      // Save to GitHub
-      await saveUsers(users, sha);
+      const newUser = await createResponse.json();
+      const user = Array.isArray(newUser) ? newUser[0] : newUser;
 
       // Return user without password
-      const { password: _, ...userWithoutPassword } = newUser;
-
       return new Response(JSON.stringify({
         success: true,
-        user: userWithoutPassword
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.full_name,
+          company: user.company
+        }
       }), {
         status: 201,
         headers: { 'Content-Type': 'application/json' }
@@ -106,15 +87,27 @@ export default async (req, context) => {
     }
 
     if (action === 'login') {
-      // Find user
-      const user = users.users.find(u => u.email === email);
+      // Get user from Supabase
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+          }
+        }
+      );
+
+      const users = await response.json();
       
-      if (!user) {
+      if (!users || users.length === 0) {
         return new Response(JSON.stringify({ message: 'Email ou mot de passe incorrect' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' }
         });
       }
+
+      const user = users[0];
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password);
@@ -127,11 +120,14 @@ export default async (req, context) => {
       }
 
       // Return user without password
-      const { password: _, ...userWithoutPassword } = user;
-
       return new Response(JSON.stringify({
         success: true,
-        user: userWithoutPassword
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.full_name,
+          company: user.company
+        }
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
