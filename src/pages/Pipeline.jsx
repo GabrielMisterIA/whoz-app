@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Layout from '../components/Layout';
+import { useToast } from '../context/ToastContext';
 import { 
   Plus,
   X,
@@ -14,6 +16,7 @@ const SUPABASE_URL = 'https://zscvspazoifgliyqnfte.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzY3ZzcGF6b2lmZ2xpeXFuZnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNDA1NjksImV4cCI6MjA4MDYxNjU2OX0.n_-qHs1crRQ1tmdURypancvrGrOy3u2Uy-FXVBXa6v4';
 
 const Pipeline = () => {
+  const { success, error: showError } = useToast();
   const [needs, setNeeds] = useState([]);
   const [talents, setTalents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -225,7 +228,7 @@ const Pipeline = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Layout>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex justify-between items-center">
@@ -584,7 +587,7 @@ const Pipeline = () => {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 };
 
