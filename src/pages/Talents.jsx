@@ -462,7 +462,7 @@ const Talents = () => {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 };
 
